@@ -1,0 +1,5 @@
+customerID;unionInfoPointer;unionCode;unionCraft;unionClass;projectID;regularRate;overtimeRate;doubleTimeRate;Createdby;modifiedBy;validFrom;validTo
+10;10000002;0604;CM;A80;*;21.720;;;lchen;lchen;2021-01-01;9999-12-31
+10;10000003;0604;CM;A65;*;17.650;;;lchen;lchen;2021-01-01;9999-12-31
+10;10000004;0614;CM;A50;*;13.580;;;lchen;lchen;2021-01-01;9999-12-31
+10;10000005;0301;PD;A80;*;26.460;;;lchen;lchen;2021-01-01;9999-12-31

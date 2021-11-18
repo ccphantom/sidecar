@@ -55,10 +55,6 @@
         "requires": {
             "db": {
                 "kind": "sql"
-            },
-            "uaa":{
-                "kind": "xsuaa",
-                "credentials": {}
             }
         },
         "hana": {

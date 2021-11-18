@@ -5,7 +5,8 @@
       "kind": "entity",
       "includes": [
         "managed",
-        "temporal"
+        "temporal",
+        "cuid"
       ],
       "elements": {
         "createdAt": {
@@ -72,21 +73,22 @@
           "@cds.valid.from": true,
           "type": "cds.Timestamp"
         },
-        "customerID": {
+        "validTo": {
+          "@cds.valid.to": true,
+          "type": "cds.Timestamp"
+        },
+        "ID": {
           "key": true,
+          "type": "cds.UUID"
+        },
+        "customerID": {
           "type": "cds.String",
           "length": 10,
           "notNull": true
         },
         "code": {
-          "key": true,
           "type": "cds.String",
           "length": 5,
-          "notNull": true
-        },
-        "validTo": {
-          "key": true,
-          "type": "cds.Timestamp",
           "notNull": true
         },
         "unionRef": {
@@ -115,7 +117,8 @@
       "kind": "entity",
       "includes": [
         "managed",
-        "temporal"
+        "temporal",
+        "cuid"
       ],
       "elements": {
         "createdAt": {
@@ -182,21 +185,22 @@
           "@cds.valid.from": true,
           "type": "cds.Timestamp"
         },
-        "customerID": {
+        "validTo": {
+          "@cds.valid.to": true,
+          "type": "cds.Timestamp"
+        },
+        "ID": {
           "key": true,
+          "type": "cds.UUID"
+        },
+        "customerID": {
           "type": "cds.String",
           "length": 10,
           "notNull": true
         },
         "code": {
-          "key": true,
           "type": "cds.String",
           "length": 5,
-          "notNull": true
-        },
-        "validTo": {
-          "key": true,
-          "type": "cds.Timestamp",
           "notNull": true
         },
         "craftRef": {
@@ -217,7 +221,8 @@
       "kind": "entity",
       "includes": [
         "managed",
-        "temporal"
+        "temporal",
+        "cuid"
       ],
       "elements": {
         "createdAt": {
@@ -284,21 +289,22 @@
           "@cds.valid.from": true,
           "type": "cds.Timestamp"
         },
-        "customerID": {
+        "validTo": {
+          "@cds.valid.to": true,
+          "type": "cds.Timestamp"
+        },
+        "ID": {
           "key": true,
+          "type": "cds.UUID"
+        },
+        "customerID": {
           "type": "cds.String",
           "length": 10,
           "notNull": true
         },
         "code": {
-          "key": true,
           "type": "cds.String",
           "length": 5,
-          "notNull": true
-        },
-        "validTo": {
-          "key": true,
-          "type": "cds.Timestamp",
           "notNull": true
         },
         "classRef": {
@@ -315,14 +321,304 @@
         }
       }
     },
+    "com.reachnett.union.UnionRates": {
+      "kind": "entity",
+      "includes": [
+        "managed",
+        "temporal",
+        "cuid"
+      ],
+      "elements": {
+        "createdAt": {
+          "@cds.on.insert": {
+            "=": "$now"
+          },
+          "@UI.HiddenFilter": true,
+          "@Core.Immutable": true,
+          "@title": "{i18n>CreatedAt}",
+          "@readonly": true,
+          "@odata.on.insert": {
+            "#": "now"
+          },
+          "type": "cds.Timestamp"
+        },
+        "createdBy": {
+          "@cds.on.insert": {
+            "=": "$user"
+          },
+          "@UI.HiddenFilter": true,
+          "@Core.Immutable": true,
+          "@title": "{i18n>CreatedBy}",
+          "@readonly": true,
+          "@odata.on.insert": {
+            "#": "user"
+          },
+          "@description": "{i18n>UserID.Description}",
+          "type": "User",
+          "length": 255
+        },
+        "modifiedAt": {
+          "@cds.on.insert": {
+            "=": "$now"
+          },
+          "@cds.on.update": {
+            "=": "$now"
+          },
+          "@UI.HiddenFilter": true,
+          "@title": "{i18n>ChangedAt}",
+          "@readonly": true,
+          "@odata.on.update": {
+            "#": "now"
+          },
+          "type": "cds.Timestamp"
+        },
+        "modifiedBy": {
+          "@cds.on.insert": {
+            "=": "$user"
+          },
+          "@cds.on.update": {
+            "=": "$user"
+          },
+          "@UI.HiddenFilter": true,
+          "@title": "{i18n>ChangedBy}",
+          "@readonly": true,
+          "@odata.on.update": {
+            "#": "user"
+          },
+          "@description": "{i18n>UserID.Description}",
+          "type": "User",
+          "length": 255
+        },
+        "validFrom": {
+          "@cds.valid.from": true,
+          "type": "cds.Timestamp"
+        },
+        "validTo": {
+          "@cds.valid.to": true,
+          "type": "cds.Timestamp"
+        },
+        "ID": {
+          "key": true,
+          "type": "cds.UUID"
+        },
+        "customerID": {
+          "type": "cds.String",
+          "length": 10
+        },
+        "unionInfoPointer": {
+          "type": "cds.String",
+          "length": 8
+        },
+        "unionCode": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "unionCraft": {
+          "type": "cds.String",
+          "length": 2
+        },
+        "unionClass": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "projectID": {
+          "type": "cds.String",
+          "length": 24
+        },
+        "regularRate": {
+          "type": "cds.Decimal",
+          "precision": 13,
+          "scale": 3
+        },
+        "overtimeRate": {
+          "type": "cds.Decimal",
+          "precision": 13,
+          "scale": 3
+        },
+        "doubleTimeRate": {
+          "type": "cds.Decimal",
+          "precision": 13,
+          "scale": 3
+        }
+      }
+    },
+    "com.reachnett.union.UnionFringes": {
+      "kind": "entity",
+      "includes": [
+        "managed",
+        "temporal",
+        "cuid"
+      ],
+      "elements": {
+        "createdAt": {
+          "@cds.on.insert": {
+            "=": "$now"
+          },
+          "@UI.HiddenFilter": true,
+          "@Core.Immutable": true,
+          "@title": "{i18n>CreatedAt}",
+          "@readonly": true,
+          "@odata.on.insert": {
+            "#": "now"
+          },
+          "type": "cds.Timestamp"
+        },
+        "createdBy": {
+          "@cds.on.insert": {
+            "=": "$user"
+          },
+          "@UI.HiddenFilter": true,
+          "@Core.Immutable": true,
+          "@title": "{i18n>CreatedBy}",
+          "@readonly": true,
+          "@odata.on.insert": {
+            "#": "user"
+          },
+          "@description": "{i18n>UserID.Description}",
+          "type": "User",
+          "length": 255
+        },
+        "modifiedAt": {
+          "@cds.on.insert": {
+            "=": "$now"
+          },
+          "@cds.on.update": {
+            "=": "$now"
+          },
+          "@UI.HiddenFilter": true,
+          "@title": "{i18n>ChangedAt}",
+          "@readonly": true,
+          "@odata.on.update": {
+            "#": "now"
+          },
+          "type": "cds.Timestamp"
+        },
+        "modifiedBy": {
+          "@cds.on.insert": {
+            "=": "$user"
+          },
+          "@cds.on.update": {
+            "=": "$user"
+          },
+          "@UI.HiddenFilter": true,
+          "@title": "{i18n>ChangedBy}",
+          "@readonly": true,
+          "@odata.on.update": {
+            "#": "user"
+          },
+          "@description": "{i18n>UserID.Description}",
+          "type": "User",
+          "length": 255
+        },
+        "validFrom": {
+          "@cds.valid.from": true,
+          "type": "cds.Timestamp"
+        },
+        "validTo": {
+          "@cds.valid.to": true,
+          "type": "cds.Timestamp"
+        },
+        "ID": {
+          "key": true,
+          "type": "cds.UUID"
+        },
+        "customerID": {
+          "type": "cds.String",
+          "length": 10
+        },
+        "unionInfoPointer": {
+          "type": "cds.String",
+          "length": 8
+        },
+        "unionCode": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "unionCraft": {
+          "type": "cds.String",
+          "length": 2
+        },
+        "unionClass": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "projectID": {
+          "type": "cds.String",
+          "length": 24
+        },
+        "benefitOption": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "unionFringe": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "fringeDescription": {
+          "type": "cds.String",
+          "length": 40
+        },
+        "fringeRate": {
+          "type": "cds.Decimal",
+          "precision": 10,
+          "scale": 5
+        },
+        "calculationMethod": {
+          "type": "cds.String",
+          "length": 1
+        },
+        "baseCode": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "vendor": {
+          "type": "cds.String",
+          "length": 10
+        },
+        "paymentModel": {
+          "type": "cds.String",
+          "length": 4
+        }
+      }
+    },
+    "CalculateBenefitService": {
+      "@source": "srv/calculate-benefit-service.cds",
+      "kind": "service",
+      "@impl": "./lib/calculate-benefit-service.js"
+    },
+    "CalculateBenefitService.calculateBenefit": {
+      "kind": "action",
+      "params": {
+        "benefitBase": {
+          "items": {
+            "type": "BenefitBase"
+          }
+        },
+        "benefitOverride": {
+          "items": {
+            "type": "BenefitOverride"
+          }
+        },
+        "benefitCumulation": {
+          "items": {
+            "type": "BenefitCumulation"
+          }
+        },
+        "customerInfo": {
+          "type": "CustomerInfo"
+        }
+      },
+      "returns": {
+        "type": "UnionBenefit"
+      }
+    },
     "UnionService": {
-      "@source": "srv/service.cds",
+      "@source": "srv/union-service.cds",
       "kind": "service",
       "@path": "service/union"
     },
     "UnionService.Unions": {
       "kind": "entity",
-      "@odata.draft.enabled": true,
       "@UI.HeaderInfo.$Type": "UI.HeaderInfoType",
       "@UI.HeaderInfo.TypeName": "Union",
       "@UI.HeaderInfo.TypeNamePlural": "Unions",
@@ -431,24 +727,25 @@
           "@cds.valid.from": true,
           "type": "cds.Timestamp"
         },
+        "validTo": {
+          "@title": "Valid To",
+          "@cds.valid.to": true,
+          "type": "cds.Timestamp"
+        },
+        "ID": {
+          "key": true,
+          "type": "cds.UUID"
+        },
         "customerID": {
           "@title": "Customer ID",
-          "key": true,
           "type": "cds.String",
           "length": 10,
           "notNull": true
         },
         "code": {
           "@title": "Code",
-          "key": true,
           "type": "cds.String",
           "length": 5,
-          "notNull": true
-        },
-        "validTo": {
-          "@title": "Valid To",
-          "key": true,
-          "type": "cds.Timestamp",
           "notNull": true
         },
         "unionRef": {
@@ -472,6 +769,482 @@
           "@title": "Long Text",
           "type": "cds.String",
           "length": 80
+        }
+      }
+    },
+    "UnionService.Crafts": {
+      "kind": "entity",
+      "projection": {
+        "from": {
+          "ref": [
+            "com.reachnett.union.Crafts"
+          ]
+        }
+      },
+      "elements": {
+        "createdAt": {
+          "@cds.on.insert": {
+            "=": "$now"
+          },
+          "@UI.HiddenFilter": true,
+          "@Core.Immutable": true,
+          "@title": "{i18n>CreatedAt}",
+          "@readonly": true,
+          "@odata.on.insert": {
+            "#": "now"
+          },
+          "type": "cds.Timestamp"
+        },
+        "createdBy": {
+          "@cds.on.insert": {
+            "=": "$user"
+          },
+          "@UI.HiddenFilter": true,
+          "@Core.Immutable": true,
+          "@title": "{i18n>CreatedBy}",
+          "@readonly": true,
+          "@odata.on.insert": {
+            "#": "user"
+          },
+          "@description": "{i18n>UserID.Description}",
+          "type": "User",
+          "length": 255
+        },
+        "modifiedAt": {
+          "@cds.on.insert": {
+            "=": "$now"
+          },
+          "@cds.on.update": {
+            "=": "$now"
+          },
+          "@UI.HiddenFilter": true,
+          "@title": "{i18n>ChangedAt}",
+          "@readonly": true,
+          "@odata.on.update": {
+            "#": "now"
+          },
+          "type": "cds.Timestamp"
+        },
+        "modifiedBy": {
+          "@cds.on.insert": {
+            "=": "$user"
+          },
+          "@cds.on.update": {
+            "=": "$user"
+          },
+          "@UI.HiddenFilter": true,
+          "@title": "{i18n>ChangedBy}",
+          "@readonly": true,
+          "@odata.on.update": {
+            "#": "user"
+          },
+          "@description": "{i18n>UserID.Description}",
+          "type": "User",
+          "length": 255
+        },
+        "validFrom": {
+          "@cds.valid.from": true,
+          "type": "cds.Timestamp"
+        },
+        "validTo": {
+          "@cds.valid.to": true,
+          "type": "cds.Timestamp"
+        },
+        "ID": {
+          "key": true,
+          "type": "cds.UUID"
+        },
+        "customerID": {
+          "type": "cds.String",
+          "length": 10,
+          "notNull": true
+        },
+        "code": {
+          "type": "cds.String",
+          "length": 5,
+          "notNull": true
+        },
+        "craftRef": {
+          "type": "cds.String",
+          "length": 10
+        },
+        "shortText": {
+          "type": "cds.String",
+          "length": 40
+        },
+        "longText": {
+          "type": "cds.String",
+          "length": 80
+        }
+      }
+    },
+    "UnionService.Classes": {
+      "kind": "entity",
+      "projection": {
+        "from": {
+          "ref": [
+            "com.reachnett.union.Classes"
+          ]
+        }
+      },
+      "elements": {
+        "createdAt": {
+          "@cds.on.insert": {
+            "=": "$now"
+          },
+          "@UI.HiddenFilter": true,
+          "@Core.Immutable": true,
+          "@title": "{i18n>CreatedAt}",
+          "@readonly": true,
+          "@odata.on.insert": {
+            "#": "now"
+          },
+          "type": "cds.Timestamp"
+        },
+        "createdBy": {
+          "@cds.on.insert": {
+            "=": "$user"
+          },
+          "@UI.HiddenFilter": true,
+          "@Core.Immutable": true,
+          "@title": "{i18n>CreatedBy}",
+          "@readonly": true,
+          "@odata.on.insert": {
+            "#": "user"
+          },
+          "@description": "{i18n>UserID.Description}",
+          "type": "User",
+          "length": 255
+        },
+        "modifiedAt": {
+          "@cds.on.insert": {
+            "=": "$now"
+          },
+          "@cds.on.update": {
+            "=": "$now"
+          },
+          "@UI.HiddenFilter": true,
+          "@title": "{i18n>ChangedAt}",
+          "@readonly": true,
+          "@odata.on.update": {
+            "#": "now"
+          },
+          "type": "cds.Timestamp"
+        },
+        "modifiedBy": {
+          "@cds.on.insert": {
+            "=": "$user"
+          },
+          "@cds.on.update": {
+            "=": "$user"
+          },
+          "@UI.HiddenFilter": true,
+          "@title": "{i18n>ChangedBy}",
+          "@readonly": true,
+          "@odata.on.update": {
+            "#": "user"
+          },
+          "@description": "{i18n>UserID.Description}",
+          "type": "User",
+          "length": 255
+        },
+        "validFrom": {
+          "@cds.valid.from": true,
+          "type": "cds.Timestamp"
+        },
+        "validTo": {
+          "@cds.valid.to": true,
+          "type": "cds.Timestamp"
+        },
+        "ID": {
+          "key": true,
+          "type": "cds.UUID"
+        },
+        "customerID": {
+          "type": "cds.String",
+          "length": 10,
+          "notNull": true
+        },
+        "code": {
+          "type": "cds.String",
+          "length": 5,
+          "notNull": true
+        },
+        "classRef": {
+          "type": "cds.String",
+          "length": 10
+        },
+        "shortText": {
+          "type": "cds.String",
+          "length": 40
+        },
+        "longText": {
+          "type": "cds.String",
+          "length": 80
+        }
+      }
+    },
+    "UnionService.UnionRates": {
+      "kind": "entity",
+      "projection": {
+        "from": {
+          "ref": [
+            "com.reachnett.union.UnionRates"
+          ]
+        }
+      },
+      "elements": {
+        "createdAt": {
+          "@cds.on.insert": {
+            "=": "$now"
+          },
+          "@UI.HiddenFilter": true,
+          "@Core.Immutable": true,
+          "@title": "{i18n>CreatedAt}",
+          "@readonly": true,
+          "@odata.on.insert": {
+            "#": "now"
+          },
+          "type": "cds.Timestamp"
+        },
+        "createdBy": {
+          "@cds.on.insert": {
+            "=": "$user"
+          },
+          "@UI.HiddenFilter": true,
+          "@Core.Immutable": true,
+          "@title": "{i18n>CreatedBy}",
+          "@readonly": true,
+          "@odata.on.insert": {
+            "#": "user"
+          },
+          "@description": "{i18n>UserID.Description}",
+          "type": "User",
+          "length": 255
+        },
+        "modifiedAt": {
+          "@cds.on.insert": {
+            "=": "$now"
+          },
+          "@cds.on.update": {
+            "=": "$now"
+          },
+          "@UI.HiddenFilter": true,
+          "@title": "{i18n>ChangedAt}",
+          "@readonly": true,
+          "@odata.on.update": {
+            "#": "now"
+          },
+          "type": "cds.Timestamp"
+        },
+        "modifiedBy": {
+          "@cds.on.insert": {
+            "=": "$user"
+          },
+          "@cds.on.update": {
+            "=": "$user"
+          },
+          "@UI.HiddenFilter": true,
+          "@title": "{i18n>ChangedBy}",
+          "@readonly": true,
+          "@odata.on.update": {
+            "#": "user"
+          },
+          "@description": "{i18n>UserID.Description}",
+          "type": "User",
+          "length": 255
+        },
+        "validFrom": {
+          "@cds.valid.from": true,
+          "type": "cds.Timestamp"
+        },
+        "validTo": {
+          "@cds.valid.to": true,
+          "type": "cds.Timestamp"
+        },
+        "ID": {
+          "key": true,
+          "type": "cds.UUID"
+        },
+        "customerID": {
+          "type": "cds.String",
+          "length": 10
+        },
+        "unionInfoPointer": {
+          "type": "cds.String",
+          "length": 8
+        },
+        "unionCode": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "unionCraft": {
+          "type": "cds.String",
+          "length": 2
+        },
+        "unionClass": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "projectID": {
+          "type": "cds.String",
+          "length": 24
+        },
+        "regularRate": {
+          "type": "cds.Decimal",
+          "precision": 13,
+          "scale": 3
+        },
+        "overtimeRate": {
+          "type": "cds.Decimal",
+          "precision": 13,
+          "scale": 3
+        },
+        "doubleTimeRate": {
+          "type": "cds.Decimal",
+          "precision": 13,
+          "scale": 3
+        }
+      }
+    },
+    "UnionService.UnionFringes": {
+      "kind": "entity",
+      "projection": {
+        "from": {
+          "ref": [
+            "com.reachnett.union.UnionFringes"
+          ]
+        }
+      },
+      "elements": {
+        "createdAt": {
+          "@cds.on.insert": {
+            "=": "$now"
+          },
+          "@UI.HiddenFilter": true,
+          "@Core.Immutable": true,
+          "@title": "{i18n>CreatedAt}",
+          "@readonly": true,
+          "@odata.on.insert": {
+            "#": "now"
+          },
+          "type": "cds.Timestamp"
+        },
+        "createdBy": {
+          "@cds.on.insert": {
+            "=": "$user"
+          },
+          "@UI.HiddenFilter": true,
+          "@Core.Immutable": true,
+          "@title": "{i18n>CreatedBy}",
+          "@readonly": true,
+          "@odata.on.insert": {
+            "#": "user"
+          },
+          "@description": "{i18n>UserID.Description}",
+          "type": "User",
+          "length": 255
+        },
+        "modifiedAt": {
+          "@cds.on.insert": {
+            "=": "$now"
+          },
+          "@cds.on.update": {
+            "=": "$now"
+          },
+          "@UI.HiddenFilter": true,
+          "@title": "{i18n>ChangedAt}",
+          "@readonly": true,
+          "@odata.on.update": {
+            "#": "now"
+          },
+          "type": "cds.Timestamp"
+        },
+        "modifiedBy": {
+          "@cds.on.insert": {
+            "=": "$user"
+          },
+          "@cds.on.update": {
+            "=": "$user"
+          },
+          "@UI.HiddenFilter": true,
+          "@title": "{i18n>ChangedBy}",
+          "@readonly": true,
+          "@odata.on.update": {
+            "#": "user"
+          },
+          "@description": "{i18n>UserID.Description}",
+          "type": "User",
+          "length": 255
+        },
+        "validFrom": {
+          "@cds.valid.from": true,
+          "type": "cds.Timestamp"
+        },
+        "validTo": {
+          "@cds.valid.to": true,
+          "type": "cds.Timestamp"
+        },
+        "ID": {
+          "key": true,
+          "type": "cds.UUID"
+        },
+        "customerID": {
+          "type": "cds.String",
+          "length": 10
+        },
+        "unionInfoPointer": {
+          "type": "cds.String",
+          "length": 8
+        },
+        "unionCode": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "unionCraft": {
+          "type": "cds.String",
+          "length": 2
+        },
+        "unionClass": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "projectID": {
+          "type": "cds.String",
+          "length": 24
+        },
+        "benefitOption": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "unionFringe": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "fringeDescription": {
+          "type": "cds.String",
+          "length": 40
+        },
+        "fringeRate": {
+          "type": "cds.Decimal",
+          "precision": 10,
+          "scale": 5
+        },
+        "calculationMethod": {
+          "type": "cds.String",
+          "length": 1
+        },
+        "baseCode": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "vendor": {
+          "type": "cds.String",
+          "length": 10
+        },
+        "paymentModel": {
+          "type": "cds.String",
+          "length": 4
         }
       }
     },
@@ -921,6 +1694,291 @@
       "@description": "{i18n>UserID.Description}",
       "type": "cds.String",
       "length": 255
+    },
+    "UnionBenefit": {
+      "kind": "type",
+      "elements": {
+        "message": {
+          "type": "cds.String",
+          "length": 10
+        },
+        "unionBenefit": {
+          "items": {
+            "elements": {
+              "customerID": {
+                "type": "cds.String",
+                "length": 10
+              },
+              "workdate": {
+                "type": "cds.Date"
+              },
+              "benefitCode": {
+                "type": "cds.String",
+                "length": 8
+              },
+              "hours": {
+                "type": "cds.Decimal"
+              },
+              "rate": {
+                "type": "cds.Decimal"
+              },
+              "amount": {
+                "type": "cds.Decimal"
+              },
+              "globalUnionCode": {
+                "type": "cds.String",
+                "length": 8
+              },
+              "globalClassCode": {
+                "type": "cds.String",
+                "length": 8
+              },
+              "globalCraftCode": {
+                "type": "cds.String",
+                "length": 8
+              },
+              "sapALZNR": {
+                "type": "cds.String",
+                "length": 4
+              },
+              "sapC1ZNR": {
+                "type": "cds.String",
+                "length": 4
+              },
+              "sapABART": {
+                "type": "cds.String",
+                "length": 4
+              },
+              "sapAPZNR": {
+                "type": "cds.String",
+                "length": 4
+              },
+              "sapUNPTR": {
+                "type": "cds.String",
+                "length": 8
+              },
+              "sapTRFGR": {
+                "type": "cds.String",
+                "length": 8
+              },
+              "sapTRFST": {
+                "type": "cds.String",
+                "length": 8
+              },
+              "sapPOSNR": {
+                "type": "cds.String",
+                "length": 8
+              }
+            }
+          }
+        }
+      }
+    },
+    "BenefitBase": {
+      "kind": "type",
+      "elements": {
+        "workdate": {
+          "type": "cds.Date"
+        },
+        "earnCode": {
+          "type": "cds.String",
+          "length": 8
+        },
+        "hours": {
+          "type": "cds.Decimal"
+        },
+        "rate": {
+          "type": "cds.Decimal"
+        },
+        "amount": {
+          "type": "cds.Decimal"
+        },
+        "baseCode": {
+          "type": "cds.String",
+          "length": 8
+        },
+        "isProductiveTime": {
+          "type": "cds.Boolean"
+        },
+        "isRegularTime": {
+          "type": "cds.Boolean"
+        },
+        "isOvertime": {
+          "type": "cds.Boolean"
+        },
+        "isDoubletime": {
+          "type": "cds.Boolean"
+        },
+        "globalUnionCode": {
+          "type": "cds.String",
+          "length": 8
+        },
+        "globalClassCode": {
+          "type": "cds.String",
+          "length": 8
+        },
+        "globalCraftCode": {
+          "type": "cds.String",
+          "length": 8
+        },
+        "projectID": {
+          "type": "cds.String",
+          "length": 24
+        },
+        "sapALZNR": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "sapC1ZNR": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "sapABART": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "sapAPZNR": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "sapUNPTR": {
+          "type": "cds.String",
+          "length": 8
+        },
+        "sapTRFGR": {
+          "type": "cds.String",
+          "length": 8
+        },
+        "sapTRFST": {
+          "type": "cds.String",
+          "length": 8
+        },
+        "sapPOSNR": {
+          "type": "cds.String",
+          "length": 8
+        }
+      }
+    },
+    "BenefitOverride": {
+      "kind": "type",
+      "elements": {
+        "customerID": {
+          "type": "cds.String",
+          "length": 10
+        },
+        "unionInfoPointer": {
+          "type": "cds.String",
+          "length": 8
+        },
+        "benefitCode": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "projectID": {
+          "type": "cds.String",
+          "length": 24
+        },
+        "endDate": {
+          "type": "cds.Date"
+        },
+        "beginDate": {
+          "type": "cds.Date"
+        },
+        "benefitDescrition": {
+          "type": "cds.String",
+          "length": 40
+        },
+        "benefitRate": {
+          "type": "cds.Decimal"
+        },
+        "calcMethod": {
+          "type": "cds.String",
+          "length": 1
+        },
+        "baseBucket": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "paymentModel": {
+          "type": "cds.String",
+          "length": 8
+        },
+        "unionCode": {
+          "type": "cds.String",
+          "length": 8
+        },
+        "unionCraft": {
+          "type": "cds.String",
+          "length": 8
+        },
+        "unionClass": {
+          "type": "cds.String",
+          "length": 8
+        }
+      }
+    },
+    "BenefitCumulation": {
+      "kind": "type",
+      "elements": {
+        "benefitCode": {
+          "type": "cds.String",
+          "length": 8
+        },
+        "type": {
+          "type": "cds.String",
+          "length": 1
+        },
+        "hours": {
+          "type": "cds.Decimal",
+          "precision": 13,
+          "scale": 3
+        },
+        "amount": {
+          "type": "cds.Decimal",
+          "precision": 13,
+          "scale": 2
+        },
+        "currency": {
+          "type": "cds.String",
+          "length": 5
+        },
+        "internalNumber": {
+          "type": "cds.String",
+          "length": 2
+        },
+        "isFirstPeriodOfMonth": {
+          "type": "cds.Boolean"
+        },
+        "isSecondPeriodOfMonth": {
+          "type": "cds.Boolean"
+        },
+        "isLastPeriodOfMonth": {
+          "type": "cds.Boolean"
+        },
+        "year": {
+          "type": "cds.String",
+          "length": 4
+        },
+        "beginDate": {
+          "type": "cds.Date"
+        },
+        "endDate": {
+          "type": "cds.Date"
+        }
+      }
+    },
+    "CustomerInfo": {
+      "kind": "type",
+      "elements": {
+        "customerID": {
+          "type": "cds.String",
+          "length": 10
+        },
+        "customerName": {
+          "type": "cds.String",
+          "length": 80
+        }
+      }
     },
     "sap.common.Languages.texts": {
       "kind": "entity",

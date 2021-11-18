@@ -1,0 +1,5 @@
+customerID;code;craftRef;shortText;longText;Createdby;modifiedBy;validFrom;validTo
+10;CA;5000;CARPENTER;CARPENTER;lchen;lchen;2021-01-01;9999-12-31
+10;CM;8000;Cement Mason;Cement Mason;lchen;lchen;2021-01-01;9999-12-31
+10;CP;UXXX;OPERATORS;OPERATORS;lchen;lchen;2021-01-01;9999-12-31
+10;DR;9999;DRIVER;DRIVER;lchen;lchen;2021-01-01;9999-12-31
