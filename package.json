@@ -21,7 +21,8 @@
     },
     "scripts": {
         "start": "cds run",
-        "watch-unions": "cds watch --open unions/webapp/index.html#fe-lrop-v4"
+        "watch-unions": "cds watch --open unions/webapp/index.html#fe-lrop-v4",
+        "watch":"cds watch"
     },
     "eslintConfig": {
         "extends": "eslint:recommended",
