@@ -7,10 +7,14 @@ class CalculateBenefitService extends cds.ApplicationService {
         await super.init()
     }
     async calculateBenefit(req) {
+        let { benefitBase, benefitOverride, benefitCumulation, customerInfo } = req.data;
+        if ( benefitBase.length == 0 ) return;
+        benefitBase.sort((a, b) => (a.workdate.localeCompare(b.workdate) || a.earnCode.localeCompare(b.earnCode) || a.baseCode.localeCompare(b.baseCode) || a.globalUnionCode.localeCompare(b.globalUnionCode)));
+
         const db = await cds.connect.to('db');
-        const { Unions } = db.entities('com.reachnett.union');
+        const { Unions, Crafts, Classes, UnionRates } = db.entities('com.reachnett.union');
         const { unions } = await db.read(Unions);
-        const { benefitBase, benefitOverride, benefitCumulation, customerInfo } = req.data;
+
         let unionBenefitArray = [];
         benefitBase.forEach(element => {
             let amount = element.hours * element.rate;
