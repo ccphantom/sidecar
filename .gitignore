@@ -104,4 +104,4 @@ dist
 .tern-port
 .DS_Store
 db/.DS_Store
-db/.DS_Store
+*.mtar
