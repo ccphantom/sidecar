@@ -10,14 +10,6 @@ class CalculateBenefitService extends cds.ApplicationService {
 
         let { benefitBase, benefitOverride, benefitCumulation, customerInfo } = req.data;
         // 1. Initialize Response
-        const unionBenefit = {
-            customerID: null, workdate: null, benefitCode: null,
-            hours: null, rate: null, amount: null,
-            globalUnionCode: null, globalClassCode: null, globalCraftCode: null,
-            sapALZNR: null, sapC1ZNR: null, sapABART: null,
-            sapAPZNR: null, sapUNPTR: null, sapTRFGR: null,
-            sapTRFST: null, sapPOSNR: null,
-        };
         const unionBenefitArray = [];
         const returnData = { message: null, unionBenefit: unionBenefitArray }
 
@@ -97,43 +89,52 @@ class CalculateBenefitService extends cds.ApplicationService {
             candidatePersonalBenefits = tempBenefits;
 
             //4.2 Calculate
+            let helpRate = null;
+            let helpHours = null;
+            let helpAmount = null;
+            let helpUnionBenefit = null;
             candidatePersonalBenefits.forEach(elmtBenefit => {
-                unionBenefit.customerID = elmtBenefit.customerID;
-                unionBenefit.workdate = elmtEarning.workdate;
-                unionBenefit.benefitCode = elmtBenefit.benefitCode;
-                unionBenefit.globalUnionCode = elmtBenefit.unionCode;
-                unionBenefit.globalUnionCraft = elmtBenefit.unionCraft;
-                unionBenefit.globalUnionClass = elmtBenefit.unionClass;
-                unionBenefit.sapALZNR = elmtEarning.sapALZNR;
-                unionBenefit.sapC1ZNR = elmtEarning.sapC1ZNR;
-                unionBenefit.sapABART = elmtEarning.sapABART;
-                unionBenefit.sapAPZNR = elmtEarning.sapAPZNR;
-                unionBenefit.sapUNPTR = elmtEarning.sapUNPTR;
-                unionBenefit.sapTRFGR = elmtEarning.sapTRFGR;
-                unionBenefit.sapTRFST = elmtEarning.sapTRFST;
-                unionBenefit.sapPOSNR = elmtEarning.sapPOSNR;
 
                 switch (elmtBenefit.calcMethod) {
                     case 'H': // hourly rate
-                        unionBenefit.rate = elmtBenefit.benefitRate;
-                        unionBenefit.hours = elmtEarning.hours;
-                        unionBenefit.amount = unionBenefit.hours * unionBenefit.rate;
+                        helpRate = elmtBenefit.benefitRate;
+                        helpHours = elmtEarning.hours;
+                        helpAmount = helpHours * helpRate;
                         break;
                     case 'F': // fixed amount
-                        unionBenefit.rate = elmtBenefit.benefitRate;
-                        unionBenefit.hours = elmtEarning.hours;
-                        unionBenefit.amount = elmtBenefit.benefitRate;
+                        helpRate = elmtBenefit.benefitRate;
+                        helpHours = elmtEarning.hours;
+                        helpAmount = elmtBenefit.benefitRate;
                         break;
                     case 'A': // percentage
-                        unionBenefit.rate = elmtEarning.rate;
-                        unionBenefit.hours = elmtEarning.hours;
-                        unionBenefit.amount = elmtEarning.amount * elmtBenefit.benefitRate / 100;
+                        helpRate = elmtEarning.rate;
+                        helpHours = elmtEarning.hours;
+                        helpAmount = elmtEarning.amount * elmtBenefit.benefitRate / 100;
                         break;
                     default:
                         break;
                 }
+                helpUnionBenefit = {
+                    customerID: elmtBenefit.customerID,
+                    workdate: elmtEarning.workdate,
+                    benefitCode: elmtBenefit.benefitCode,
+                    globalUnionCode: elmtBenefit.unionCode,
+                    globalUnionCraft: elmtBenefit.unionCraft,
+                    globalUnionClass: elmtBenefit.unionClass,
+                    sapALZNR: elmtEarning.sapALZNR,
+                    sapC1ZNR: elmtEarning.sapC1ZNR,
+                    sapABART: elmtEarning.sapABART,
+                    sapAPZNR: elmtEarning.sapAPZNR,
+                    sapUNPTR: elmtEarning.sapUNPTR,
+                    sapTRFGR: elmtEarning.sapTRFGR,
+                    sapTRFST: elmtEarning.sapTRFST,
+                    sapPOSNR: elmtEarning.sapPOSNR,
+                    rate: helpRate,
+                    hours: helpHours,
+                    amount: helpAmount
+                }
 
-                unionBenefitArray.push(unionBenefit);                                                      // append
+                unionBenefitArray.push(helpUnionBenefit);                                                      // append
             })
 
         });
