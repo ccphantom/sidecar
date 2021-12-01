@@ -60,3 +60,14 @@ entity UnionFringes : managed, temporal, cuid {
     vendor            : String(10);
     paymentModel      : String(4)
 }
+
+entity DavisBacon : managed, temporal, cuid {
+    customerID       : String(10);
+    unionInfoPointer : String(8);
+    unionCode        : String(4);
+    unionCraft       : String(2);
+    unionClass       : String(4);
+    projectID        : String(24);
+    basicRate        : Decimal(10, 5);
+    combinedRate     : Decimal(10, 5)
+}

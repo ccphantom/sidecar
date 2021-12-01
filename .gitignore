@@ -105,3 +105,6 @@ dist
 .DS_Store
 db/.DS_Store
 *.mtar
+
+# Others
+*.code-workspace

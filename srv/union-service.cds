@@ -6,4 +6,5 @@ service UnionService {
     entity Classes as projection on union.Classes;
     entity UnionRates as projection on union.UnionRates;
     entity UnionFringes as projection on union.UnionFringes;
+    entity DavisBacon as projection on union.DavisBacon;
 }
