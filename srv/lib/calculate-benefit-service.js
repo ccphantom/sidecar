@@ -49,7 +49,8 @@ class CalculateBenefitService extends cds.ApplicationService {
                     (elmt.unionClass == elmtEarning.globalUnionClass || elmt.unionClass == '*') &&
                     (elmt.unionCraft == elmtEarning.globalUnionCraft || elmt.unionCraft == '*') &&
                     (elmt.projectID == elmtEarning.projectID || elmt.projectID == '*') &&
-                    (elmt.validFrom <= elmtEarning.workdate && elmt.validTo >= elmtEarning.workdate)
+                    (elmt.validFrom <= elmtEarning.workdate && elmt.validTo >= elmtEarning.workdate) &&
+                    (elmt.baseCode == elmtEarning.earnCode)
                 );
             });
 
@@ -150,7 +151,7 @@ class CalculateBenefitService extends cds.ApplicationService {
                         break;
                 }
                 helpUnionBenefit = {
-                    customerID: elmtBenefit.customerID,
+                    customerID: customerInfo.customerID,
                     workdate: elmtEarning.workdate,
                     benefitCode: elmtBenefit.benefitCode,
                     globalUnionCode: elmtBenefit.unionCode,
@@ -168,10 +169,8 @@ class CalculateBenefitService extends cds.ApplicationService {
                     hours: helpHours,
                     amount: helpAmount
                 }
+                unionBenefitArray.push(helpUnionBenefit);                                                      // append
             })
-
-            unionBenefitArray.push(helpUnionBenefit);                                                      // append
-
         });
 
         // 5. Wrap up response
