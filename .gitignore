@@ -144,4 +144,12 @@ dist
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
 .DS_Store
+<<<<<<< HEAD
 .mtar
+=======
+db/.DS_Store
+*.mtar
+
+# Others
+*.code-workspace
+>>>>>>> 230cfe64a2a2e140bd701ee1b2772ae8e8d5709c

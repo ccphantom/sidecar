@@ -1,3 +1,4 @@
+const { array } = require('@sap/cds');
 const cds = require('@sap/cds')
 
 class CalculateBenefitService extends cds.ApplicationService {
@@ -48,9 +49,10 @@ class CalculateBenefitService extends cds.ApplicationService {
                     (elmt.unionClass == elmtEarning.globalUnionClass || elmt.unionClass == '*') &&
                     (elmt.unionCraft == elmtEarning.globalUnionCraft || elmt.unionCraft == '*') &&
                     (elmt.projectID == elmtEarning.projectID || elmt.projectID == '*') &&
-                    (elmt.validFrom <= elmtEarning.workdate && elmt.validTo >= elmtEarning.workdate)
+                    (elmt.validFrom <= elmtEarning.workdate && elmt.validTo >= elmtEarning.workdate) &&
+                    (elmt.baseCode == elmtEarning.earnCode)
                 );
-            })
+            });
 
             candidatePersonalBenefits = candidatePersonalBenefits.filter(elmt => {
                 return ((elmt.unionCode == elmtEarning.globalUnionCode || elmt.unionCode == '*') &&
@@ -59,7 +61,7 @@ class CalculateBenefitService extends cds.ApplicationService {
                     (elmt.projectID == elmtEarning.projectID || elmt.projectID == '*') &&
                     (elmt.beginDate <= elmtEarning.workdate && elmt.endDate >= elmtEarning.workdate)
                 );
-            })
+            });
 
             let personalBenefitCodes = [...new Set(candidatePersonalBenefits.map(e => e.benefitCode))];  // merge generic into personal benefits if not duplicated
             candidateBenefits.forEach(elmt => {
@@ -82,11 +84,45 @@ class CalculateBenefitService extends cds.ApplicationService {
                     }
                     candidatePersonalBenefits.push(helpArray);
                 }
-            })
+            });
 
-            let tempBenefits = [];                                                                        // prioritize
-            tempBenefits = candidatePersonalBenefits;  // Need to add Prioritize Logic
-            candidatePersonalBenefits = tempBenefits;
+            candidatePersonalBenefits.sort((a, b) => {                                                   // prioritize by specification 
+                let aCode = a.benefitCode.toUpperCase();
+                let bCode = b.benefitCode.toUpperCase();
+                if (aCode < bCode) {
+                    return -1;
+                } else if (aCode > bCode) {
+                    return 1;
+                } else {
+                    if (a.projectID === b.projectID && a.unionCode === b.unionCode && a.unionClass === b.unionClass && a.unionCraft === b.unionCraft) {
+                        return 0;
+                    } else if (a.projectID != '*' && a.unionCode != '*' && a.unionClass != '*' && a.unionCraft != '*') {
+                        return -1;
+                    } else if (b.projectID != '*' && b.unionCode != '*' && b.unionClass != '*' && b.unionCraft != '*') {
+                        return 1;
+                    } else if (a.projectID == '*' && a.unionCode != '*' && a.unionClass != '*' && a.unionCraft != '*') {
+                        return -1;
+                    } else if (b.projectID == '*' && b.unionCode != '*' && b.unionClass != '*' && b.unionCraft != '*') {
+                        return 1;
+                    } else if (a.projectID == '*' && a.unionCode != '*' && a.unionClass == '*' && a.unionCraft == '*') {
+                        return -1;
+                    } else if (b.projectID == '*' && b.unionCode != '*' && b.unionClass == '*' && b.unionCraft == '*') {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                }
+            });
+
+            candidatePersonalBenefits.filter((elmt, index, array) => {
+                if (index == array.findIndex((elmt2) => {
+                    return elmt2.benefitCode == elmt.benefitCode;
+                })) {
+                    return true;
+                } else {
+                    return false;
+                }
+            });
 
             //4.2 Calculate
             let helpRate = null;
@@ -115,7 +151,7 @@ class CalculateBenefitService extends cds.ApplicationService {
                         break;
                 }
                 helpUnionBenefit = {
-                    customerID: elmtBenefit.customerID,
+                    customerID: customerInfo.customerID,
                     workdate: elmtEarning.workdate,
                     benefitCode: elmtBenefit.benefitCode,
                     globalUnionCode: elmtBenefit.unionCode,
@@ -133,10 +169,8 @@ class CalculateBenefitService extends cds.ApplicationService {
                     hours: helpHours,
                     amount: helpAmount
                 }
-
                 unionBenefitArray.push(helpUnionBenefit);                                                      // append
             })
-
         });
 
         // 5. Wrap up response
