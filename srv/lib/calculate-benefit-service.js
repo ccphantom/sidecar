@@ -1,4 +1,3 @@
-const { array } = require('@sap/cds');
 const cds = require('@sap/cds')
 
 class CalculateBenefitService extends cds.ApplicationService {

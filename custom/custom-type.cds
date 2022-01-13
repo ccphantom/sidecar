@@ -1,4 +1,4 @@
-type UnionBenefit {
+/* type UnionBenefit {
     message             : String(10);
     unionBenefit        : array of {
         customerID      : String(10);
@@ -10,6 +10,7 @@ type UnionBenefit {
         globalUnionCode : String(8);
         globalClassCode : String(8);
         globalCraftCode : String(8);
+        projectID       : String(24);
         sapALZNR        : String(4);
         sapC1ZNR        : String(4);
         sapABART        : String(4);
@@ -19,6 +20,27 @@ type UnionBenefit {
         sapTRFST        : String(8);
         sapPOSNR        : String(8)
     }
+} */
+
+type UnionBenefit {
+    customerID      : String(10);
+    workdate        : Date;
+    benefitCode     : String(8);
+    hours           : Decimal;
+    rate            : Decimal;
+    amount          : Decimal;
+    globalUnionCode : String(8);
+    globalClassCode : String(8);
+    globalCraftCode : String(8);
+    projectID       : String(24);
+    sapALZNR        : String(4);
+    sapC1ZNR        : String(4);
+    sapABART        : String(4);
+    sapAPZNR        : String(4);
+    sapUNPTR        : String(8);
+    sapTRFGR        : String(8);
+    sapTRFST        : String(8);
+    sapPOSNR        : String(8)
 }
 
 type BenefitBase : {
@@ -45,6 +67,10 @@ type BenefitBase : {
     sapTRFST         : String(8);
     sapPOSNR         : String(8)
 }
+
+type HourBase : BenefitBase {
+    percentage : Decimal;
+};
 
 type BenefitOverride : {
     customerID        : String(10);
@@ -81,4 +107,25 @@ type BenefitCumulation : {
 type CustomerInfo : {
     customerID   : String(10);
     customerName : String(80);
-};
+}
+
+type EmployerBenefitBase : {
+    workdate        : Date;
+    earnCode        : String(8);
+    hours           : Decimal;
+    rate            : Decimal;
+    amount          : Decimal;
+    baseCode        : String(8);
+    globalUnionCode : String(8);
+    globalClassCode : String(8);
+    globalCraftCode : String(8);
+    projectID       : String(24);
+    sapALZNR        : String(4);
+    sapC1ZNR        : String(4);
+    sapABART        : String(4);
+    sapAPZNR        : String(4);
+    sapUNPTR        : String(8);
+    sapTRFGR        : String(8);
+    sapTRFST        : String(8);
+    sapPOSNR        : String(8)
+}
