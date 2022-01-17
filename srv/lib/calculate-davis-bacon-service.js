@@ -71,10 +71,10 @@ class CalculateDavisBaconService extends cds.ApplicationService {
         }
         totalPayRate = totalPayRate + employerPayRate
         const davisBaconElement = await this.readDavisBaconRate(customerInfo, hourBase)
-        if (davisBaconElement.length == 0) {
+        if (!davisBaconElement) {
             return {}
         }
-        let davisBaconRate = davisBaconElement[0].combinedRate
+        let davisBaconRate = davisBaconElement.davisBaconRate
         if (davisBaconRate > totalPayRate) {
             let amountDifference = (davisBaconRate - totalPayRate) * hourBase.hours
             let unionBenefit = {
@@ -102,14 +102,19 @@ class CalculateDavisBaconService extends cds.ApplicationService {
         return {}
     }
     async readDavisBaconRate(customerInfo, hourBase) {
-        const davisBaconElement = await SELECT.from`DavisBacon`.where`
+        // const davisBaconElement = await SELECT.from`DavisBacon`.where`
+        //                                     customerID = ${customerInfo.customerID} and
+        //                                     unionInfoPointer = ${hourBase.sapUNPTR} and
+        //                                     projectID = ${hourBase.projectID} and
+        //                                     validFrom <= ${hourBase.workdate} and
+        //                                     validTo >= ${hourBase.workdate} 
+        //                                 `
+        const davisBaconRate = await SELECT.one `combinedRate as davisBaconRate` .from`DavisBacon`.where`
                                             customerID = ${customerInfo.customerID} and
                                             unionInfoPointer = ${hourBase.sapUNPTR} and
-                                            projectID = ${hourBase.projectID} and
-                                            validFrom <= ${hourBase.workdate} and
-                                            validTo >= ${hourBase.workdate} 
+                                            projectID = ${hourBase.projectID}
                                         `
-        return davisBaconElement
+        return davisBaconRate
     }
 }
 module.exports = CalculateDavisBaconService
