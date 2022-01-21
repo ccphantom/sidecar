@@ -4,7 +4,7 @@
 ## approuter=
 _schema-version: '3.1'
 ID: sidecar
-version: 1.0.0
+version: 1.0.1
 description: "ECO Union Solution Sidecar"
 parameters:
   enable-parallel-deployments: true

@@ -102,17 +102,13 @@ class CalculateDavisBaconService extends cds.ApplicationService {
         return {}
     }
     async readDavisBaconRate(customerInfo, hourBase) {
-        // const davisBaconElement = await SELECT.from`DavisBacon`.where`
-        //                                     customerID = ${customerInfo.customerID} and
-        //                                     unionInfoPointer = ${hourBase.sapUNPTR} and
-        //                                     projectID = ${hourBase.projectID} and
-        //                                     validFrom <= ${hourBase.workdate} and
-        //                                     validTo >= ${hourBase.workdate} 
-        //                                 `
+        const workdate = new Date(hourBase.workdate).toISOString()
         const davisBaconRate = await SELECT.one `combinedRate as davisBaconRate` .from`DavisBacon`.where`
                                             customerID = ${customerInfo.customerID} and
                                             unionInfoPointer = ${hourBase.sapUNPTR} and
-                                            projectID = ${hourBase.projectID}
+                                            projectID = ${hourBase.projectID} and
+                                            validFrom <= ${workdate} and
+                                            validTo >= ${workdate} 
                                         `
         return davisBaconRate
     }
