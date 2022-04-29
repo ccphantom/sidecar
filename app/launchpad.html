@@ -10,12 +10,28 @@
             window['sap-ushell-config'] = {
                 defaultRenderer: 'fiori2',
                 applications: {
-                    'fe-lrop-v4': {
+                    'unions-app': {
                         title: 'Unions',
                         description: 'Union Application',
                         additionalInformation: 'SAPUI5.Component=com.reachnett.union.unions',
                         applicationType: 'URL',
-                        url: './',
+                        url: './unions/webapp',
+                        navigationMode: 'embedded'
+                    },
+                    'parameters-app': {
+                        title: 'Parameters',
+                        description: 'Parameter Application',
+                        additionalInformation: 'SAPUI5.Component=com.reachnett.union.parameters',
+                        applicationType: 'URL',
+                        url: './parameters/webapp',
+                        navigationMode: 'embedded'
+                    },
+                    'fringe-app' : {
+                        title: 'Union Fringe Rate',
+                        description: 'Union Fringe Rate Application',
+                        additionalInformation: 'SAPUI5.Component=com.reachnett.union.unionfringerate',
+                        applicationType: 'URL',
+                        url: './union-fringe-rate/webapp',
                         navigationMode: 'embedded'
                     }
                 }

@@ -221,3 +221,8 @@ $RECYCLE.BIN/
 
 *.mtar
 gen/
+Makefile*.mta
+dist/
+resources/
+app/*/package-lock.json
+db/data/*

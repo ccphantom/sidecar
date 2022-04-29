@@ -71,3 +71,7 @@ entity DavisBacon : managed, temporal, cuid {
     basicRate        : Decimal(10, 5);
     combinedRate     : Decimal(10, 5)
 }
+entity ConstantParameter : managed, temporal, cuid {
+    parameter : String(20);
+    value : String(20)
+}

@@ -6,14 +6,17 @@
     "license": "UNLICENSED",
     "private": true,
     "dependencies": {
-        "@sap/cds": "^5",
+        "@sap/cds": "5.4.5",
         "@sap/xsenv": "^3.1.1",
         "@sap/xssec": "^3.2.7",
+        "cf-nodejs-logging-support": "^6.12.0",
+        "eslint": "^8.12.0",
         "express": "^4",
-        "hdb": "^0.18.3"
+        "hdb": "^0.18.3",
+        "passport": "^0.5.0"
     },
     "devDependencies": {
-        "@sap/ux-specification": "^1.90.10",
+        "@sap/ux-specification": "^1.96.9",
         "sqlite3": "^5.0.2"
     },
     "engines": {
@@ -21,7 +24,9 @@
     },
     "scripts": {
         "start": "cds run",
-        "watch-unions": "cds watch --open unions/webapp/index.html#fe-lrop-v4"
+        "watch-unions": "cds watch --open unions/webapp/index.html#fe-lrop-v4",
+        "undeploy": "cf undeploy sidecar --delete-services --delete-service-keys",
+        "watch-union-fringe-rate": "cds watch --open union-fringe-rate/webapp/index.html?sap-ui-xx-viewCache=false#fe-lrop-v4"
     },
     "eslintConfig": {
         "extends": "eslint:recommended",
@@ -49,7 +54,8 @@
         }
     },
     "sapux": [
-        "app/unions"
+        "app/unions",
+        "app/union-fringe-rate"
     ],
     "cds": {
         "requires": {

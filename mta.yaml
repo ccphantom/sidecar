@@ -1,73 +1,169 @@
-## Generated mta.yaml based on template version 0.4.0
-## appName = sidecar
-## language=nodejs; multitenant=false
-## approuter=
-_schema-version: '3.1'
+_schema-version: "3.1"
 ID: sidecar
+description: ECO Union Solution Sidecar
 version: 1.0.1
-description: "ECO Union Solution Sidecar"
+modules:
+- name: sidecar-srv
+  type: nodejs
+  path: gen/srv
+  requires:
+  - name: sidecar-db
+  - name: sidecar-uaa
+  - name: sidecar-logs
+  provides:
+  - name: srv-api
+    properties:
+      srv-url: ${default-url}
+  parameters:
+    buildpack: nodejs_buildpack
+- name: sidecar-db-deployer
+  type: hdb
+  path: gen/db
+  requires:
+  - name: sidecar-db
+  - name: sidecar-uaa
+  - name: sidecar-logs
+  parameters:
+    buildpack: nodejs_buildpack
+- name: sidecar-destinations
+  type: com.sap.application.content
+  requires:
+  - name: sidecar-uaa
+    parameters:
+      service-key:
+        name: sidecar-uaa-key
+  - name: sidecar-html5-repo-host
+    parameters:
+      service-key:
+        name: sidecar-html5-repo-host-key
+  - name: srv-api
+  - name: sidecar-destination
+    parameters:
+      content-target: true
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Authentication: OAuth2UserTokenExchange
+          Name: sidecar-app-srv
+          TokenServiceInstanceName: sidecar-uaa
+          TokenServiceKeyName: sidecar-uaa-key
+          URL: ~{srv-api/srv-url}
+          sap.cloud.service: sidecar.service
+        - Name: sidecar-html5-repo-host
+          ServiceInstanceName: sidecar-html5-repo-host
+          ServiceKeyName: sidecar-html5-repo-host-key
+          sap.cloud.service: sidecar.service
+        - Authentication: OAuth2UserTokenExchange
+          Name: sidecar-uaa
+          ServiceInstanceName: sidecar-uaa
+          ServiceKeyName: sidecar-uaa-key
+          sap.cloud.service: sidecar.service
+        existing_destinations_policy: update
+  build-parameters:
+    no-source: true
+- name: sidecar-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: sidecar-html5-repo-host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - comreachnettunionunions.zip
+      name: comreachnettunionunions
+      target-path: resources/
+    - artifacts:
+      - comreachnettunionparameters.zip
+      name: comreachnettunionparameters
+      target-path: resources/
+    - artifacts:
+      - comreachnettunionunionfringerate.zip
+      name: comreachnettunionunionfringerate
+      target-path: resources/
+- name: comreachnettunionunions
+  type: html5
+  path: app/unions
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: comreachnettunionparameters
+  type: html5
+  path: app/parameters
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: comreachnettunionunionfringerate
+  type: html5
+  path: app/union-fringe-rate
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: sidecar-db
+  type: com.sap.xs.hdi-container
+  parameters:
+    service: hana
+    service-plan: hdi-shared
+  properties:
+    hdi-service-name: ${service-name}
+- name: sidecar-uaa
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      tenant-mode: dedicated
+      xsappname: sidecar-${space}
+    service: xsuaa
+    service-plan: application
+- name: sidecar-logs
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: application-logs
+    service-plan: lite
+- name: sidecar-destination
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-plan: lite
+- name: sidecar-html5-repo-host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-plan: app-host
 parameters:
+  deploy_mode: html5-repo
   enable-parallel-deployments: true
-   
 build-parameters:
   before-all:
-   - builder: custom
-     commands:
-      - npm install --production
-      - npx -p @sap/cds-dk cds build --production
-      - npx rimraf gen/db/src/gen/data
-
-modules:
- # --------------------- SERVER MODULE ------------------------
- - name: sidecar-srv
- # ------------------------------------------------------------
-   type: nodejs
-   path: gen/srv
-   parameters:
-     buildpack: nodejs_buildpack
-   requires:
-    # Resources extracted from CAP configuration
-    - name: sidecar-db
-    - name: sidecar-uaa
-   provides:
-    - name: srv-api      # required by consumers of CAP services (e.g. approuter)
-      properties:
-        srv-url: ${default-url}
-
- # -------------------- SIDECAR MODULE ------------------------
- - name: sidecar-db-deployer
- # ------------------------------------------------------------
-   type: hdb
-   path: gen/db  
-   parameters:
-     buildpack: nodejs_buildpack
-   requires:
-    # 'hana' and 'xsuaa' resources extracted from CAP configuration
-    - name: sidecar-db
-    - name: sidecar-uaa
-
-
-resources:
- # services extracted from CAP configuration
- # 'service-plan' can be configured via 'cds.requires.<name>.vcap.plan'
-# ------------------------------------------------------------
- - name: sidecar-db
-# ------------------------------------------------------------
-   type: com.sap.xs.hdi-container
-   parameters:
-     service: hana  # or 'hanatrial' on trial landscapes
-     service-plan: hdi-shared
-   properties:
-     hdi-service-name: ${service-name}
-# ------------------------------------------------------------
- - name: sidecar-uaa
-# ------------------------------------------------------------
-   type: org.cloudfoundry.managed-service
-   parameters:
-     service: xsuaa
-     service-plan: application  
-     config:
-       xsappname: sidecar-${space}    #  name + space dependency
-       tenant-mode: dedicated
-
-
+  - builder: custom
+    commands:
+    - npm install --production
+    - npx -p @sap/cds-dk cds build --production
+    - npx rimraf gen/db/src/gen/data

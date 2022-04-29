@@ -1,41 +1,41 @@
 {
     "_version": "1.32.0",
     "sap.app": {
-        "id": "com.reachnett.union.unions",
-        "type": "application",
-        "i18n": "i18n/i18n.properties",
-        "applicationVersion": {
-            "version": "1.0.0"
-        },
-        "title": "{{appTitle}}",
-        "description": "{{appDescription}}",
-        "dataSources": {
-            "mainService": {
-                "uri": "/service/union/",
-                "type": "OData",
-                "settings": {
-                    "odataVersion": "4.0"
-                }
-            }
-        },
-        "offline": false,
-        "resources": "resources.json",
-        "sourceTemplate": {
-            "id": "ui5template.fiorielements.v4.lrop",
-            "version": "1.0.0"
-        },
-        "crossNavigation": {
-            "inbounds": {
-                "Unions-display": {
-                    "signature": {
-                        "parameters": {},
-                        "additionalParameters": "allowed"
-                    },
-                    "semanticObject": "Unions",
-                    "action": "display"
-                }
-            }
+      "id": "com.reachnett.union.unionfringerate",
+      "type": "application",
+      "i18n": "i18n/i18n.properties",
+      "applicationVersion": {
+        "version": "1.0.0"
+      },
+      "title": "{{appTitle}}",
+      "description": "{{appDescription}}",
+      "dataSources": {
+        "mainService": {
+          "uri": "/service/union/",
+          "type": "OData",
+          "settings": {
+            "odataVersion": "4.0"
+          }
         }
+      },
+      "offline": false,
+      "resources": "resources.json",
+      "sourceTemplate": {
+        "id": "ui5template.fiorielements.v4.lrop",
+        "version": "1.0.0"
+      },
+      "crossNavigation": {
+        "inbounds": {
+          "UnionFringeRates-display": {
+            "signature": {
+              "parameters": {},
+              "additionalParameters": "allowed"
+            },
+            "semanticObject": "UnionFringeRates",
+            "action": "display"
+          }
+        }
+      }
     },
     "sap.ui": {
         "technology": "UI5",
@@ -59,13 +59,17 @@
             "css": []
         },
         "dependencies": {
-            "minUI5Version": "1.94.1",
+            "minUI5Version": "1.99.0",
             "libs": {
                 "sap.ui.core": {},
                 "sap.fe.templates": {}
             }
         },
         "models": {
+            "@i18n": {
+                "type": "sap.ui.model.resource.ResourceModel",
+                "uri": "i18n/i18n.properties"
+            },
             "i18n": {
                 "type": "sap.ui.model.resource.ResourceModel",
                 "uri": "i18n/i18n.properties"
@@ -83,45 +87,44 @@
         },
         "routing": {
             "routes": [
-                {
-                    "pattern": ":?query:",
-                    "name": "UnionsList",
-                    "target": "UnionsList"
-                },
-                {
-                    "pattern": "Unions({key}):?query:",
-                    "name": "UnionsObjectPage",
-                    "target": "UnionsObjectPage"
-                }
+              {
+                  "pattern": ":?query:",
+                  "name": "UnionFringesList",
+                  "target": "UnionFringesList"
+              },
+              {
+                  "pattern": "UnionFringes({key}):?query:",
+                  "name": "UnionFringesObjectPage",
+                  "target": "UnionFringesObjectPage"
+              }
             ],
             "targets": {
-                "UnionsList": {
+                "UnionFringesList": {
                     "type": "Component",
-                    "id": "UnionsList",
+                    "id": "UnionFringesList",
                     "name": "sap.fe.templates.ListReport",
                     "options": {
                         "settings": {
-                            "editableHeaderContent": true,
-                            "entitySet": "Unions",
+                            "entitySet": "UnionFringes",
                             "variantManagement": "Page",
                             "navigation": {
-                                "Unions": {
+                                "UnionFringes": {
                                     "detail": {
-                                        "route": "UnionsObjectPage"
+                                        "route": "UnionFringesObjectPage"
                                     }
                                 }
                             }
                         }
                     }
                 },
-                "UnionsObjectPage": {
+                "UnionFringesObjectPage": {
                     "type": "Component",
-                    "id": "UnionsObjectPage",
+                    "id": "UnionFringesObjectPage",
                     "name": "sap.fe.templates.ObjectPage",
                     "options": {
                         "settings": {
                             "editableHeaderContent": false,
-                            "entitySet": "Unions"
+                            "entitySet": "UnionFringes"
                         }
                     }
                 }
