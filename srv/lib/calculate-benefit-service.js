@@ -152,13 +152,13 @@ class CalculateBenefitService extends cds.ApplicationService {
         return (
           (elmt.unionCode == elmtEarning.globalUnionCode ||
             elmt.unionCode == "*") &&
-          (elmt.unionClass == elmtEarning.globalUnionClass ||
+          (elmt.unionClass == elmtEarning.globalClassCode ||
             elmt.unionClass == "*") &&
-          (elmt.unionCraft == elmtEarning.globalUnionCraft ||
+          (elmt.unionCraft == elmtEarning.globalCraftCode ||
             elmt.unionCraft == "*") &&
           (elmt.projectID == elmtEarning.projectID || elmt.projectID == "*") &&
-          elmt.validFrom <= elmtEarning.workdate &&
-          elmt.validTo >= elmtEarning.workdate &&
+          elmt.validFrom.split('T')[0] <= elmtEarning.workdate &&
+          elmt.validTo.split('T')[0] >= elmtEarning.workdate &&
           elmt.baseCode == elmtEarning.earnCode
         );
       });
@@ -266,18 +266,20 @@ class CalculateBenefitService extends cds.ApplicationService {
         }
       });
 
-      candidatePersonalBenefits.filter((elmt, index, array) => {
-        if (
-          index ==
-          array.findIndex((elmt2) => {
-            return elmt2.benefitCode == elmt.benefitCode;
-          })
-        ) {
-          return true;
-        } else {
-          return false;
+      candidatePersonalBenefits = candidatePersonalBenefits.filter(
+        (elmt, index, array) => {
+          if (
+            index ==
+            array.findIndex((elmt2) => {
+              return elmt2.benefitCode == elmt.benefitCode;
+            })
+          ) {
+            return true;
+          } else {
+            return false;
+          }
         }
-      });
+      );
 
       //4.2 Calculate
       let helpRate = null;
@@ -297,7 +299,8 @@ class CalculateBenefitService extends cds.ApplicationService {
             helpAmount = elmtBenefit.benefitRate;
             break;
           case "A": // percentage
-            helpRate = elmtEarning.rate;
+            // helpRate = elmtEarning.rate;
+            helpRate = elmtBenefit.benefitRate;
             helpHours = elmtEarning.hours;
             helpAmount = (elmtEarning.amount * elmtBenefit.benefitRate) / 100;
             break;
@@ -319,6 +322,7 @@ class CalculateBenefitService extends cds.ApplicationService {
           sapTRFGR: elmtEarning.sapTRFGR,
           sapTRFST: elmtEarning.sapTRFST,
           sapPOSNR: elmtEarning.sapPOSNR,
+          calcMethod: elmtBenefit.calcMethod,
           rate: helpRate,
           hours: helpHours,
           amount: helpAmount,
