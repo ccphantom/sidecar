@@ -7,17 +7,19 @@ class CalculateBenefitService extends cds.ApplicationService {
     await super.init();
   }
   async calculateBenefit(req) {
+    const payFrequencyMap = this.getPayFrequencyMap();
     const db = await cds.connect.to("db");
     const { ConstantParameter } = db.entities("com.reachnett.union");
-    const logSwitch = await SELECT.one`value`.from(ConstantParameter).where`parameter = 'LOG'`;
-    if (logSwitch.value == 'ON') {
+    const logSwitch = await SELECT.one`value`.from(ConstantParameter)
+      .where`parameter = 'LOG'`;
+    if (logSwitch.value == "ON") {
       log.setLoggingLevel("info");
-      log.registerCustomFields(["request_body", "response_body"])
+      log.registerCustomFields(["request_body", "response_body"]);
     }
     let unionBenefits = [];
     const { unionBenefitParameters } = req.data;
-    if (logSwitch.value == 'ON') {
-      log.info("request body", { "request_body": unionBenefitParameters });
+    if (logSwitch.value == "ON") {
+      log.info("request body", { request_body: unionBenefitParameters });
     }
     const customerInfo = unionBenefitParameters.customerInfo;
     const calculationBase = unionBenefitParameters.calculationBase;
@@ -32,22 +34,24 @@ class CalculateBenefitService extends cds.ApplicationService {
       let unionBenefit = { employeeNumber: employeeNumber };
       unionBenefit["unionBenefitResults"] = await this.buildUnionBenefitResults(
         customerInfo,
-        unionBenefitParametersByEmployee
+        unionBenefitParametersByEmployee,
+        payFrequencyMap
       );
       unionBenefits.push(unionBenefit);
     }
-    if (logSwitch.value == 'ON') {
-      log.info("response body", { "response_body": unionBenefits });
+    if (logSwitch.value == "ON") {
+      log.info("response body", { response_body: unionBenefits });
     }
     return req.reply({ unionBenefits: unionBenefits });
   }
 
   validCustomerInfo(customerInfo) {
     let passValidation = true;
-    let returnMessage = "";
+    let returnMessage = {};
     if (customerInfo.length == 0) {
       passValidation = false;
-      returnMessage = "Customer information is empty";
+      returnMessage["messageType"] = "error";
+      returnMessage["message"] = "Customer information is empty";
     }
     return {
       passValidation,
@@ -55,31 +59,50 @@ class CalculateBenefitService extends cds.ApplicationService {
     };
   }
 
-  async buildUnionBenefitResults(customerInfo, unionBenefitParametersByEmployee) {
+  async buildUnionBenefitResults(
+    customerInfo,
+    unionBenefitParametersByEmployee,
+    payFrequencyMap
+  ) {
     let unionBenefitResults = [];
     for (const unionBenefitParameterByEmployee of unionBenefitParametersByEmployee) {
       let { payPeriodInfo, benefitBase, benefitOverride, benefitCumulation } =
         unionBenefitParameterByEmployee;
 
-      let { passValidation, returnMessage } = this.validateInputData(benefitBase);
+      let returnValidation = this.validateInputData(benefitBase);
+      let passValidation = returnValidation.passValidation;
+      let returnMessage = returnValidation.returnMessage;
       if (typeof benefitOverride === "undefined") {
         benefitOverride = [];
       }
+      if (passValidation == true) {
+        returnValidation = this.validateBenefitOverride(benefitOverride);
+        passValidation = returnValidation.passValidation;
+        returnMessage = returnValidation.returnMessage;
+      }
+
       let unionBenefitResult = {};
+      unionBenefitResult["payPeriodInfo"] = payPeriodInfo;
       if (passValidation == false) {
         unionBenefitResult["message"] = returnMessage;
         unionBenefitResults.push(unionBenefitResult);
         continue;
       }
-      unionBenefitResult["payPeriodInfo"] = payPeriodInfo;
+
       let unionBenefitRecords = await this.buildUnionBenefitRecords(
         benefitBase,
         benefitOverride,
         benefitCumulation,
-        customerInfo
+        customerInfo,
+        payPeriodInfo,
+        payFrequencyMap
       );
       unionBenefitResult["unionBenefitResult"] = unionBenefitRecords;
-      unionBenefitResult["message"] = "Calculated Successfully";
+      unionBenefitResult["message"] = {
+        messageType: "Info",
+        message: "Calculated Successfully",
+      };
+
       unionBenefitResults.push(unionBenefitResult);
     }
     return unionBenefitResults;
@@ -87,11 +110,11 @@ class CalculateBenefitService extends cds.ApplicationService {
 
   validateInputData(benefitBase) {
     let passValidation = true;
-    let returnMessage = "";
+    let returnMessage = {};
     if (benefitBase.length == 0) {
       passValidation = false;
-      returnMessage = "Benefit base table is empty";
-
+      returnMessage["messageType"] = "error";
+      returnMessage["message"] = "Benefit base table is empty";
       return {
         passValidation,
         returnMessage,
@@ -104,24 +127,47 @@ class CalculateBenefitService extends cds.ApplicationService {
     };
   }
 
-  async buildUnionBenefitRecords( benefitBase, benefitOverride, benefitCumulation, customerInfo ) {
-    // // 1. Initialize Response
-    let unionBenefits = [];
-    // const returnData = { message: null, unionBenefit: unionBenefitArray };
+  validateBenefitOverride(benefitOverrides) {
+    let passValidation = true;
+    let returnMessage = {};
+    if (benefitOverrides.length > 0) {
+      for (const benefitOverride of benefitOverrides) {
+        if (!("benefitCode" in benefitOverride)) {
+          passValidation = false;
+          returnMessage["messageType"] = "error";
+          returnMessage["message"] = "Missing Benefit Code";
 
-    // // 2. Check if there is valid data feed
-    // if (benefitBase.length == 0) {
-    //   returnData.message = "No data feed";
-    //   return req.reply(returnData);
-    // }
+          return {
+            passValidation,
+            returnMessage,
+          };
+        }
+      }
+    }
+
+    return {
+      passValidation,
+      returnMessage,
+    };
+  }
+
+  async buildUnionBenefitRecords(
+    benefitBases,
+    benefitOverride,
+    benefitCumulation,
+    customerInfo,
+    payPeriodInfo,
+    payFrequencyMap
+  ) {
+    // 1. Initialize Response
+    let unionBenefits = [];
+
     // 3. Read from Database
     const db = await cds.connect.to("db");
-    const { UnionFringes } = db.entities(
-      "com.reachnett.union"
-    );
+    const { UnionFringes } = db.entities("com.reachnett.union");
     const criteriaGlobalUnionCode = [
       ...new Set(
-        benefitBase.map((element) => {
+        benefitBases.map((element) => {
           return element.globalUnionCode;
         })
       ),
@@ -133,7 +179,7 @@ class CalculateBenefitService extends cds.ApplicationService {
     });
 
     // 4. Start Processing Benefit Base Line Items
-    benefitBase.sort(
+    benefitBases.sort(
       (a, b) =>
         a.workdate.localeCompare(b.workdate) ||
         a.earnCode.localeCompare(b.earnCode) ||
@@ -141,39 +187,56 @@ class CalculateBenefitService extends cds.ApplicationService {
         a.globalUnionCode.localeCompare(b.globalUnionCode)
     );
 
-    benefitBase.forEach((elmtEarning) => {
+    let aFixUnionBenefits = [];
+    benefitBases.forEach((benefitBase) => {
       // 4.1. Gather all associated benefits for this line item setup
       let candidateBenefits = JSON.parse(JSON.stringify(unionFringes)); //deep copy
       let candidatePersonalBenefits = JSON.parse(
         JSON.stringify(benefitOverride)
       );
-      candidateBenefits = candidateBenefits.filter((elmt) => {
+      candidateBenefits = candidateBenefits.filter((benefit) => {
+        const skipMonthlyBenefit = this.checkMonthlyBenefit(
+          benefit,
+          payPeriodInfo,
+          payFrequencyMap,
+          benefitCumulation
+        );
         // knock out unrelative
         return (
-          (elmt.unionCode == elmtEarning.globalUnionCode ||
-            elmt.unionCode == "*") &&
-          (elmt.unionClass == elmtEarning.globalClassCode ||
-            elmt.unionClass == "*") &&
-          (elmt.unionCraft == elmtEarning.globalCraftCode ||
-            elmt.unionCraft == "*") &&
-          (elmt.projectID == elmtEarning.projectID || elmt.projectID == "*") &&
-          elmt.validFrom.split('T')[0] <= elmtEarning.workdate &&
-          elmt.validTo.split('T')[0] >= elmtEarning.workdate &&
-          elmt.baseCode == elmtEarning.earnCode
+          (benefit.unionCode == benefitBase.globalUnionCode ||
+            benefit.unionCode == "*") &&
+          (benefit.unionClass == benefitBase.globalClassCode ||
+            benefit.unionClass == "*") &&
+          (benefit.unionCraft == benefitBase.globalCraftCode ||
+            benefit.unionCraft == "*") &&
+          (benefit.projectID == benefitBase.projectID ||
+            benefit.projectID == "*") &&
+          benefit.validFrom.split("T")[0] <= benefitBase.workdate &&
+          benefit.validTo.split("T")[0] >= benefitBase.workdate &&
+          benefit.baseCode == benefitBase.earnCode &&
+          !skipMonthlyBenefit
         );
       });
 
-      candidatePersonalBenefits = candidatePersonalBenefits.filter((elmt) => {
+      candidatePersonalBenefits = candidatePersonalBenefits.filter((personalBenefit) => {
+        const skipMonthlyBenefit = this.checkMonthlyBenefit(
+          personalBenefit,
+          payPeriodInfo,
+          payFrequencyMap,
+          benefitCumulation
+        );
         return (
-          (elmt.unionCode == elmtEarning.globalUnionCode ||
-            elmt.unionCode == "*") &&
-          (elmt.unionClass == elmtEarning.globalUnionClass ||
-            elmt.unionClass == "*") &&
-          (elmt.unionCraft == elmtEarning.globalUnionCraft ||
-            elmt.unionCraft == "*") &&
-          (elmt.projectID == elmtEarning.projectID || elmt.projectID == "*") &&
-          elmt.beginDate <= elmtEarning.workdate &&
-          elmt.endDate >= elmtEarning.workdate
+          (personalBenefit.unionCode == benefitBase.globalUnionCode ||
+            personalBenefit.unionCode == "*") &&
+          (personalBenefit.unionClass == benefitBase.globalClassCode ||
+            personalBenefit.unionClass == "*") &&
+          (personalBenefit.unionCraft == benefitBase.globalCraftCode ||
+            personalBenefit.unionCraft == "*") &&
+          (personalBenefit.projectID == benefitBase.projectID || personalBenefit.projectID == "*") &&
+          personalBenefit.beginDate <= benefitBase.workdate &&
+          personalBenefit.endDate >= benefitBase.workdate &&
+          !skipMonthlyBenefit
+          // && elmt.baseBucket == benefitBase.earnCode
         );
       });
 
@@ -202,8 +265,16 @@ class CalculateBenefitService extends cds.ApplicationService {
         }
       });
 
+      candidatePersonalBenefits = candidatePersonalBenefits.filter(
+        (personalBenefit) => {
+          return personalBenefit.baseBucket == benefitBase.earnCode;
+        }
+      );
+
       candidatePersonalBenefits.sort((a, b) => {
         // prioritize by specification
+        // let aCode = ( a.benefitCode || '' ).toUpperCase();
+        // let bCode = ( b.benefitCode || '' ).toUpperCase();
         let aCode = a.benefitCode.toUpperCase();
         let bCode = b.benefitCode.toUpperCase();
         if (aCode < bCode) {
@@ -286,52 +357,235 @@ class CalculateBenefitService extends cds.ApplicationService {
       let helpHours = null;
       let helpAmount = null;
       let helpUnionBenefit = null;
-      candidatePersonalBenefits.forEach((elmtBenefit) => {
-        switch (elmtBenefit.calcMethod) {
+      candidatePersonalBenefits.forEach((personalBenefit) => {
+        let bIsFixedAmountBenfit = false;
+        switch (personalBenefit.calcMethod) {
           case "H": // hourly rate
-            helpRate = elmtBenefit.benefitRate;
-            helpHours = elmtEarning.hours;
+            helpRate = personalBenefit.benefitRate;
+            helpHours = benefitBase.hours;
             helpAmount = helpHours * helpRate;
             break;
           case "F": // fixed amount
-            helpRate = elmtBenefit.benefitRate;
-            helpHours = elmtEarning.hours;
-            helpAmount = elmtBenefit.benefitRate;
+            bIsFixedAmountBenfit = true;
+            helpRate = personalBenefit.benefitRate;
+            helpHours = benefitBase.hours;
+            helpAmount = personalBenefit.benefitRate;
             break;
           case "A": // percentage
-            // helpRate = elmtEarning.rate;
-            helpRate = elmtBenefit.benefitRate;
-            helpHours = elmtEarning.hours;
-            helpAmount = (elmtEarning.amount * elmtBenefit.benefitRate) / 100;
+            helpRate = personalBenefit.benefitRate;
+            helpHours = benefitBase.hours;
+            helpAmount =
+              (benefitBase.amount * personalBenefit.benefitRate) / 100;
             break;
           default:
             break;
         }
         helpUnionBenefit = {
           customerID: customerInfo.customerID,
-          workdate: elmtEarning.workdate,
-          benefitCode: elmtBenefit.benefitCode,
-          globalUnionCode: elmtBenefit.unionCode,
-          globalUnionCraft: elmtBenefit.unionCraft,
-          globalUnionClass: elmtBenefit.unionClass,
-          sapALZNR: elmtEarning.sapALZNR,
-          sapC1ZNR: elmtEarning.sapC1ZNR,
-          sapABART: elmtEarning.sapABART,
-          sapAPZNR: elmtEarning.sapAPZNR,
-          sapUNPTR: elmtEarning.sapUNPTR,
-          sapTRFGR: elmtEarning.sapTRFGR,
-          sapTRFST: elmtEarning.sapTRFST,
-          sapPOSNR: elmtEarning.sapPOSNR,
-          calcMethod: elmtBenefit.calcMethod,
+          workdate: benefitBase.workdate,
+          benefitCode: personalBenefit.benefitCode,
+          globalUnionCode: personalBenefit.unionCode,
+          globalCraftCode: personalBenefit.unionCraft,
+          globalClassCode: personalBenefit.unionClass,
+          sapALZNR: benefitBase.sapALZNR,
+          sapC1ZNR: benefitBase.sapC1ZNR,
+          sapABART: benefitBase.sapABART,
+          sapAPZNR: benefitBase.sapAPZNR,
+          sapUNPTR: benefitBase.sapUNPTR,
+          sapTRFGR: benefitBase.sapTRFGR,
+          sapTRFST: benefitBase.sapTRFST,
+          sapPOSNR: benefitBase.sapPOSNR,
+          calcMethod: personalBenefit.calcMethod,
           rate: helpRate,
           hours: helpHours,
           amount: helpAmount,
         };
-        unionBenefits.push(helpUnionBenefit); // append
+        if (bIsFixedAmountBenfit) {
+          aFixUnionBenefits.push(helpUnionBenefit);
+        } else {
+          unionBenefits.push(helpUnionBenefit);
+        }
       });
     });
 
+    unionBenefits = await this.resolveRoundingIssue(unionBenefits);
+    aFixUnionBenefits = await this.updateFixUnionBenefits(aFixUnionBenefits);
+
+    for (const fixUnionBenefit of aFixUnionBenefits) {
+      unionBenefits.push(fixUnionBenefit);
+    }
     return unionBenefits;
+  }
+
+  async updateFixUnionBenefits(aFixUnionBenefits) {
+    let aBenefitCountByWageType = [];
+    let aUnionBenefits = [];
+
+    for (let oFixUnionBenefit of aFixUnionBenefits) {
+      const iRecordIndex = aBenefitCountByWageType.findIndex(
+        (oBenefitCountByWageType) =>
+          oBenefitCountByWageType.benefitCode === oFixUnionBenefit.benefitCode
+      );
+
+      if (iRecordIndex > -1) {
+        aBenefitCountByWageType[iRecordIndex].count =
+          aBenefitCountByWageType[iRecordIndex].count + 1;
+      } else {
+        aBenefitCountByWageType.push({
+          benefitCode: oFixUnionBenefit.benefitCode,
+          count: 1,
+        });
+      }
+    }
+
+    for (const oBenefitCountByWageType of aBenefitCountByWageType) {
+      let iTotalAmount = 0;
+      let iCount = 0;
+      let iTargetAmount = 0;
+      for (let oFixUnionBenefit of aFixUnionBenefits) {
+        if (
+          oFixUnionBenefit.benefitCode === oBenefitCountByWageType.benefitCode
+        ) {
+          if (iCount == 0) {
+            iTargetAmount = this.roundTo2Decimal(
+              Number(oFixUnionBenefit.amount).toFixed(6)
+            );
+          }
+          iCount = iCount + 1;
+          if (iCount < oBenefitCountByWageType.count) {
+            oFixUnionBenefit.amount = this.roundTo2Decimal(
+              Number(oFixUnionBenefit.amount / oBenefitCountByWageType.count)
+            );
+            iTotalAmount = iTotalAmount + oFixUnionBenefit.amount;
+          } else {
+            // last record
+            oFixUnionBenefit.amount = this.roundTo2Decimal(
+              iTargetAmount - iTotalAmount
+            );
+          }
+          aUnionBenefits.push(oFixUnionBenefit);
+        }
+      }
+    }
+    return aUnionBenefits;
+  }
+
+  async resolveRoundingIssue(aUnionBenefits) {
+    let aBenefitGroupByBenefitCode = [];
+    for (let oUnionBenefit of aUnionBenefits) {
+      const iRecordIndex = aBenefitGroupByBenefitCode.findIndex(
+        (oBenefitGroupByWageType) =>
+          oBenefitGroupByWageType.benefitCode === oUnionBenefit.benefitCode
+      );
+
+      if (iRecordIndex > -1) {
+        aBenefitGroupByBenefitCode[iRecordIndex].count =
+          aBenefitGroupByBenefitCode[iRecordIndex].count + 1;
+        aBenefitGroupByBenefitCode[iRecordIndex].amount =
+          aBenefitGroupByBenefitCode[iRecordIndex].amount +
+          oUnionBenefit.amount;
+      } else {
+        aBenefitGroupByBenefitCode.push({
+          benefitCode: oUnionBenefit.benefitCode,
+          amount: oUnionBenefit.amount,
+          count: 1,
+        });
+      }
+    }
+
+    let aNewUnionBenefits = [];
+    for (const oBenefitGroupByBenefitCode of aBenefitGroupByBenefitCode) {
+      const iTargetAmount = this.roundTo2Decimal(
+        Number(oBenefitGroupByBenefitCode.amount).toFixed(6)
+      );
+      let iTotalAmount = 0;
+      let iCount = 0;
+      for (let oUnionBenefit of aUnionBenefits) {
+        if (
+          oUnionBenefit.benefitCode === oBenefitGroupByBenefitCode.benefitCode
+        ) {
+          iCount = iCount + 1;
+          if (iCount < oBenefitGroupByBenefitCode.count) {
+            oUnionBenefit.amount = this.roundTo2Decimal(
+              Number(oUnionBenefit.amount)
+            );
+            iTotalAmount =
+              iTotalAmount + this.roundTo2Decimal(Number(oUnionBenefit.amount));
+          } else {
+            // last record
+            oUnionBenefit.amount = this.roundTo2Decimal(
+              Number(iTargetAmount - iTotalAmount)
+            );
+          }
+          aNewUnionBenefits.push(oUnionBenefit);
+        }
+      }
+    }
+    return aNewUnionBenefits;
+  }
+  roundTo2Decimal(number) {
+    if (number > 0) {
+      return +(Math.round(number + "e+2") + "e-2");
+    } else {
+      return -(Math.round(Math.abs(number) + "e+2") + "e-2");
+    }
+  }
+  getPayFrequencyMap() {
+    return {
+      "1POM": 1,
+      "2POM": 2,
+      "3POM": 3,
+      "4POM": 4,
+      LPOM: "LAST",
+    };
+  }
+  checkMonthlyBenefit(
+    benefit,
+    payPeriodInfo,
+    payFrequencyMap,
+    benefitCumulation
+  ) {
+    let skipMonthlyBenefit = false;
+    if (!benefit.paymentModel) {
+      return false;
+    }
+    const payFrequency = payFrequencyMap[benefit.paymentModel];
+    if (payFrequency == "LAST") {
+      if (payPeriodInfo.isLastPeriodOfMonth != "Y") {
+        skipMonthlyBenefit = true;
+      }
+    } else {
+      if (payPeriodInfo.periodNumberOfMonth < payFrequency) {
+        skipMonthlyBenefit = true;
+      } else if (payPeriodInfo.periodNumberOfMonth > payFrequency) {
+        if (
+          this.monthlyBenefitHasBeenCalculated(
+            payPeriodInfo.payDate,
+            benefitCumulation,
+            benefit.benefitCode
+          )
+        ) {
+          skipMonthlyBenefit = true;
+        }
+      }
+    }
+    return skipMonthlyBenefit;
+  }
+  monthlyBenefitHasBeenCalculated(payDate, benefitCumulations, benefitCode){
+    if ((payDate || '').length > 8 && benefitCumulations != undefined) {
+      // const payYear = payDate.substring(0, 4)
+      // const payMonth = payDate.substring(6,8)
+      for (const benefitCumulation of benefitCumulations) {
+        if (benefitCumulation.type == 'M' &&
+            benefitCumulation.benefitCode == benefitCode && 
+            benefitCumulation.beginDate <= payDate && 
+            benefitCumulation.endDate >= payDate 
+           ) {
+          return true
+        }
+      }
+    }
+    return false
   }
 }
 module.exports = CalculateBenefitService;

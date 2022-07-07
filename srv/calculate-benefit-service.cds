@@ -3,7 +3,9 @@ using {
     BenefitOverride,
     BenefitCumulation,
     CustomerInfo,
-    UnionBenefit
+    UnionBenefit,
+    Message,
+    PeriodInfo
 } from '../custom/custom-type';
 
 type UnionBenefitParameter : {
@@ -11,10 +13,7 @@ type UnionBenefitParameter : {
     calculationBase                      : array of {
         employeeNumber                   : String(8);
         unionBenefitParametersByEmployee : array of {
-            payPeriodInfo                : {
-                sequenceNumber           : String(5);
-                payDate                  : Date
-            };
+            payPeriodInfo                : PeriodInfo;
             benefitBase                  : array of BenefitBase;
             benefitOverride              : array of BenefitOverride;
             benefitCumulation            : array of BenefitCumulation;
@@ -25,11 +24,8 @@ type UnionBenefitParameter : {
 type UnionBenefitReturn : {
     employeeNumber         : String(8);
     unionBenefitResults    : array of {
-        message            : String(50);
-        payPeriodInfo      : {
-            sequenceNumber : String(5);
-            payDate        : Date
-        };
+        message            : Message;
+        payPeriodInfo      : PeriodInfo;
         unionBenefitResult : array of UnionBenefit
     }
 }

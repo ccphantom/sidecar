@@ -130,3 +130,17 @@ type EmployerBenefitBase : {
     sapTRFST        : String(8);
     sapPOSNR        : String(8)
 }
+
+type Message : {
+    messageType : String(10);
+    message: String(200)
+};
+
+type PeriodInfo : {
+    sequenceNumber      : String(5);
+    payDate             : Date;
+    periodNumberOfMonth : String(1);
+    isLastPeriodOfMonth : String(1)
+};
+
+
