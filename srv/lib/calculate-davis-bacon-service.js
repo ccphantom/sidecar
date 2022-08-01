@@ -10,19 +10,21 @@ class CalculateDavisBaconService extends cds.ApplicationService {
   async calculateDavisBacon(req) {
     const db = await cds.connect.to("db");
     const { ConstantParameter } = db.entities("com.reachnett.union");
-    const logSwitch = await SELECT.one`value`.from(ConstantParameter).where`parameter = 'LOG'`;
-    if (logSwitch.value == 'ON') {
-        log.setLoggingLevel("info");
-        log.registerCustomFields(["request_body", "response_body"]);  
+    const logSwitch = await SELECT.one`value`.from(ConstantParameter)
+      .where`parameter = 'LOG'`;
+    if (logSwitch != null && logSwitch.value == "ON") {
+      log.setLoggingLevel("info");
+      log.registerCustomFields(["request_body", "response_body"]);
     }
     let davisBacons = [];
     const { davisBaconParameters } = req.data;
-    if (logSwitch.value == "ON") {
+    if (logSwitch != null && logSwitch.value == "ON") {
       log.info("request body", { request_body: davisBaconParameters });
     }
     const customerInfo = davisBaconParameters.customerInfo;
     const calculationBase = davisBaconParameters.calculationBase;
-    const { passValidation, returnMessage } = this.validCustomerInfo(customerInfo);
+    const { passValidation, returnMessage } =
+      this.validCustomerInfo(customerInfo);
     if (passValidation == false) {
       return req.reply(returnMessage);
     }
@@ -38,8 +40,8 @@ class CalculateDavisBaconService extends cds.ApplicationService {
       );
       davisBacons.push(davisBacon);
     }
-    if (logSwitch.value == 'ON') {
-        log.info("response body", { response_body: davisBacons });
+    if (logSwitch != null && logSwitch.value == "ON") {
+      log.info("response body", { response_body: davisBacons });
     }
     return req.reply({ davisBacons: davisBacons });
   }
@@ -78,7 +80,9 @@ class CalculateDavisBaconService extends cds.ApplicationService {
   getTotalHours(hoursBase) {
     let totalHours = 0;
     hoursBase.forEach((hourBase) => {
-      totalHours = totalHours + parseFloat(hourBase.hours);
+      if (hourBase.addToTotalHours == true) {
+        totalHours = totalHours + parseFloat(hourBase.hours);
+      }
     });
     return totalHours;
   }
@@ -91,7 +95,12 @@ class CalculateDavisBaconService extends cds.ApplicationService {
     return totalEmployerPay;
   }
 
-  async buildDavisBaconRecord(hourBase, employerPayRate, customerInfo, DavisBacon) {
+  async buildDavisBaconRecord(
+    hourBase,
+    employerPayRate,
+    customerInfo,
+    DavisBacon
+  ) {
     let totalPayRate = 0;
     if (parseFloat(hourBase.percentage) > 100) {
       totalPayRate =
@@ -114,10 +123,12 @@ class CalculateDavisBaconService extends cds.ApplicationService {
       let unionBenefit = {
         customerID: customerInfo.customerID,
         workdate: hourBase.workdate,
-        benefitCode: "9B46",
+        benefitCode: "DBWT",
         hours: hourBase.hours,
         rate: "",
         amount: amountDifference,
+        addToTotalHours: hourBase.addToTotalHours,
+        isDavisBaconEligible: hourBase.isDavisBaconEligible,
         globalUnionCode: hourBase.globalUnionCode,
         globalClassCode: hourBase.globalClassCode,
         globalCraftCode: hourBase.globalCraftCode,
@@ -136,21 +147,27 @@ class CalculateDavisBaconService extends cds.ApplicationService {
     return {};
   }
   async readDavisBaconRate(customerInfo, hourBase, DavisBacon) {
-    if (hourBase.projectID == undefined) return
+    if (hourBase.projectID == undefined) return;
     // const projectID = hourBase.projectID != undefined ? hourBase.projectID : '*'
     const workdate = new Date(hourBase.workdate).toISOString();
     const davisBaconRate =
       await SELECT.one`combinedRate as davisBaconRate`.from(DavisBacon)
         .where`customerID = ${customerInfo.customerID} and
-                                            unionInfoPointer = ${hourBase.sapUNPTR} and
-                                            projectID = ${hourBase.projectID} and
-                                            validFrom <= ${workdate} and
-                                            validTo >= ${workdate} 
+                            unionCode = ${hourBase.globalUnionCode} and
+                            unionCraft = ${hourBase.globalCraftCode} and
+                            unionClass = ${hourBase.globalClassCode} and
+                                  projectID = ${hourBase.projectID} and
+                                 validFrom <= ${workdate} and
+                                   validTo >= ${workdate} 
                                         `;
     return davisBaconRate;
   }
 
-  async buildDavisBaconResults(customerInfo, davisBaconParametersByEmployee, DavisBacon) {
+  async buildDavisBaconResults(
+    customerInfo,
+    davisBaconParametersByEmployee,
+    DavisBacon
+  ) {
     let davisBaconResults = [];
     for (const davisBaconParameterByEmployee of davisBaconParametersByEmployee) {
       let { payPeriodInfo, hoursBase, employerBenefitBase } =
@@ -164,7 +181,7 @@ class CalculateDavisBaconService extends cds.ApplicationService {
       }
       davisBaconResult["payPeriodInfo"] = payPeriodInfo;
       if (employerBenefitBase == undefined) {
-        employerBenefitBase = []
+        employerBenefitBase = [];
       }
       let totalHours = this.getTotalHours(hoursBase);
       let totalEmployerPay = this.getTotalEmployerPay(employerBenefitBase);
@@ -182,9 +199,17 @@ class CalculateDavisBaconService extends cds.ApplicationService {
     return davisBaconResults;
   }
 
-  async buildDavisBaconRecords(hoursBase, employerPayRate, customerInfo, DavisBacon) {
+  async buildDavisBaconRecords(
+    hoursBase,
+    employerPayRate,
+    customerInfo,
+    DavisBacon
+  ) {
     let davisBaconRecords = [];
     for (const hourBase of hoursBase) {
+      if (hourBase.isDavisBaconEligible == false) {
+        continue;
+      }
       const davisBaconRecord = await this.buildDavisBaconRecord(
         hourBase,
         employerPayRate,

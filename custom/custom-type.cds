@@ -28,7 +28,7 @@ type UnionBenefit {
     benefitCode     : String(8);
     hours           : Decimal;
     rate            : Decimal;
-    calcMethod     : String(1);
+    calcMethod      : String(1);
     amount          : Decimal;
     globalUnionCode : String(8);
     globalClassCode : String(8);
@@ -70,7 +70,9 @@ type BenefitBase : {
 }
 
 type HourBase : BenefitBase {
-    percentage : Decimal;
+    addToTotalHours      : Boolean;
+    isDavisBaconEligible : Boolean;
+    percentage           : Decimal;
 };
 
 type BenefitOverride : {
@@ -133,7 +135,7 @@ type EmployerBenefitBase : {
 
 type Message : {
     messageType : String(10);
-    message: String(200)
+    message     : String(200)
 };
 
 type PeriodInfo : {
@@ -142,5 +144,3 @@ type PeriodInfo : {
     periodNumberOfMonth : String(1);
     isLastPeriodOfMonth : String(1)
 };
-
-
